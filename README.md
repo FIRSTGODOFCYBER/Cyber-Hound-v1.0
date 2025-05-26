@@ -26,7 +26,7 @@ CyberHound/
 ├── sniffer.py # Live traffic sniffer with model inference
 ├── traffic.db # SQLite database storing traffic logs
 ├── randomforest_model.joblib # Trained ML model
-├── run_all.sh # Shell script to start everything
+├── selected_features.joblib # Top prediction features used while sniffing the network to determinate
 └── README.md # You’re here
 
 
