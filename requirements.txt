@@ -7,3 +7,5 @@ matplotlib
 gdown
 reportlab
 jinja2
+sqlite3
+scapy
