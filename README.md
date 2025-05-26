@@ -46,7 +46,15 @@ CyberHound/
 3. **Install dependencies**
      pip install -r requirements.txt
 
-4. **Run the sniffer and dashboard on seperate terminals for easy analysis of output**
+4. ### 🔽 Download Pretrained Model
+
+This project uses a pre-trained 'randomforest_model.joblib' (60MB).
+
+To download it:
+python download_model.py
+   
+
+5. **Run the sniffer and dashboard on seperate terminals for easy analysis of output**
       python sniffer.py      # Start traffic monitoring
    
   cd dashboard
