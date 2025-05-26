@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Network Traffic Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+    .alert { border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+    .alert-danger { background: #ffdddd; border-left: 5px solid red; }
+    .alert-safe { background: #ddffdd; border-left: 5px solid green; }
+    h1 { color: #333; margin-bottom: 10px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; background: white; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #eee; }
+    form label { font-weight: bold; }
+    form input { margin-right: 15px; padding: 5px; }
+    form button {
+      background-color: #007BFF; color: white; border: none; padding: 6px 12px;
+      border-radius: 4px; cursor: pointer;
+    }
+    form button:hover { background-color: #0056b3; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Real-Time Network Traffic Monitoring</h1>
+
+  <form id="pdfForm" method="POST" action="/export" target="_blank">
+    <label>
+      Start Time:
+      <input type="datetime-local" name="start" id="startTime">
+    </label>
+    <label>
+      End Time:
+      <input type="datetime-local" name="end" id="endTime">
+    </label>
+    <label>
+      Filter IP:
+      <input type="text" name="ip" id="ipFilter" placeholder="e.g. 192.168.1.5">
+    </label>
+    <button type="submit">Download PDF</button>
+  </form>
+
+  <div id="alerts"></div>
+
+  <table id="trafficTable">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>Source IP</th>
+        <th>Destination IP</th>
+        <th>Prediction</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function fetchData() {
+      const start = document.getElementById('startTime').value;
+      const end = document.getElementById('endTime').value;
+      const ip = document.getElementById('ipFilter').value;
+
+      // Build query params for API
+      const params = new URLSearchParams();
+      if (start) params.append('start', start);
+      if (end) params.append('end', end);
+      if (ip) params.append('ip', ip);
+
+      const res = await fetch('/data?' + params.toString());
+      const data = await res.json();
+
+      // Update alerts (show last 5 rows)
+      const alertsHtml = data.slice(0, 5).map(row => `
+        <div class="alert ${row[3] == 1 ? 'alert-danger' : 'alert-safe'}">
+          <strong>${row[3] == 1 ? '🚨 Attack Detected' : '✅ Normal Traffic'}</strong>
+          <p>🕒 ${row[0]}<br>📡 ${row[1]} ➡️ ${row[2]}</p>
+        </div>
+      `).join('');
+      document.getElementById('alerts').innerHTML = alertsHtml;
+
+      // Update table
+      const tbody = document.querySelector('#trafficTable tbody');
+      tbody.innerHTML = data.map(row => `
+        <tr>
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>${row[2]}</td>
+          <td>${row[3] == 1 ? 'Attack' : 'Benign'}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Fetch data every 4 seconds
+    setInterval(fetchData, 4000);
+
+    // Also fetch immediately on load and on input change
+    fetchData();
+    document.getElementById('startTime').addEventListener('change', fetchData);
+    document.getElementById('endTime').addEventListener('change', fetchData);
+    document.getElementById('ipFilter').addEventListener('input', fetchData);
+  </script>
+</body>
+</html>
